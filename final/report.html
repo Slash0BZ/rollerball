@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<!-- saved from url=(0050)http://getbootstrap.com/examples/starter-template/ -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="http://getbootstrap.com/favicon.ico">
+
+    <title>Rollerball Final Report</title>
+
+    <!-- Bootstrap core CSS -->
+    <link href="../bootstrap/bootstrap.min.css" rel="stylesheet">
+
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <link href="../bootstrap/ie10-viewport-bug-workaround.css" rel="stylesheet">
+
+    <!-- Custom styles for this template -->
+    <link href="../bootstrap/starter-template.css" rel="stylesheet">
+
+    <!-- Just for debugging purposes. Don't actually copy these 2 lines! -->
+    <!--[if lt IE 9]><script src="../../assets/js/ie8-responsive-file-warning.js"></script><![endif]-->
+    <script src="../bootstrap/ie-emulation-modes-warning.js"></script>
+
+    <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+  </head>
+
+  <body>
+
+    <nav class="navbar navbar-inverse navbar-fixed-top">
+      <div class="container">
+        <div class="navbar-header">
+          <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false" aria-controls="navbar">
+            <span class="sr-only">Toggle navigation</span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+            <span class="icon-bar"></span>
+          </button>
+          <a class="navbar-brand" href="../index.html">Project Rollerball</a>
+        </div>
+        <div id="navbar" class="collapse navbar-collapse">
+          <ul class="nav navbar-nav">
+            <li class="active"><a href="../index.html">Home</a></li>
+          </ul>
+        </div><!--/.nav-collapse -->
+      </div>
+    </nav>
+
+    <div class="container">
+
+      <div class="starter-template">
+        <h1>Final Report</h1>
+        <p class="lead">Revision v1.0</p>
+      </div>
+
+    </div><!-- /.container -->
+    <div class="container">
+	  <div class="page-header">
+	  	<h2>Authors</h2>
+	  </div>
+	  <p> <a href="mailto:xuanyu@stanford.edu">Xuanyu Zhou</a> (SUID: xuanyu)</p>
+	  <p> <a href="mailto:sileiren@stanford.edu">Silei Ren</a> (SUID: sileiren)</p>
+      <div class="page-header">
+        <h2>1 Introduction</h2>
+      </div>
+      <h3>1.1 Functionality</h3>
+      <p>We simulated a rail that is constructed with 20 arbitrary and consecutive points and make a ball rolling on it according to real-world physical system. This simulation supports real-time view-changing, rail-shape changing and background/texture changing.</p>
+      <h3>1.2 Technical Choices</h3>
+      <p>We used WebGL and lighgl.js as its supporting library. This is a low-level WebGL framework and contains basic functionalities like gl matrix, but provides no shaders or scene renderers.</p>
+      <h3>1.3 Division of Labor</h3>
+          <p>Xuanyu: In charge of the visual design and website construction. </p>
+          <p>Silei: In charge of the physical engine and view-changing module. </p>
+      <div class="page-header">
+        <h2>2 Visual designs</h2>
+      </div>
+
+      <h3>2.1 Sphere</h3>
+      <p>I designed the sphere using triangle meshes built into lightgl library. Then I calculated the texture coordinates of the sphere.<p>
+      <h3>2.2 Rail</h3>
+      <p>To collaborate with the physical engine, I designed two APIs with Silei, fxyz(t) gives the position of the rail and fproperties(t) gives the properties of each point on the rail. Then I sample the rail with multiple points, as t goes from 0 to 20 with a 0.05 gap, then pair each point with a fixed distance to make the rail has a width, and then sample the next pair of points. Using the four points I have, I connect them with 2 triangles according to the direction that the normal points to, and thus make a surface mesh. Having the top surface mesh, I then sample another set of points according to the previous one but having a certain distance (some unit times the normal vector), thus this gives the lower mesh. Similarly with all the points, I then make the front and back as well as the top, a 3-D rail is now constructed. One improvments I made on the rail meshed is that I used a function loadRailMesh() that only computes once for all the 20 points, avoiding wasted calculations in scene rendering.</p>
+      <h3>2.3 Skybox</h3>
+      <p>Making the skybox is quiet straight-forward. I first made a box that is really large surrounding the main models, (six planes with the same size that closes as a box), then mapped a set of textures onto it and this gives the skybox. I saved the variable for the skybox resource so different set of skybox textures can be easily switched in real-time. </p>
+      <h3>2.4 Shaders</h3>
+      <p>Since lightgl provides no shaders, I have to implement them. I gained the idea from the tutorials in lightgl library. For the phong shader, I used the shader that we used in homework. I did face a challenge of fixing the light position. Because when the ball rolling, it will change the matrix as well. Then I realized that I need to record the light position right after setting the camera, before any ball movements. It worked. Then I considered more improvements like make shadows happen. The basic idea is we use a specific shader and from the light’s position, shade all the objects into a texture. To construct the light’s view, I used the bounding sphere for the rail to specify the center point. After having the texture of light's propective, I used another shader for the upper rail mesh to compare the depth with the depthMap and furthers gives shadows.</p>
+      <h3>2.5 Control panel</h3>
+      <p>The last work I did was constructing the control panel for our web application that enables real-time changing to the shape of the rail and ball movements accordingly. What I did was I constructed two set of points(20 each) on the webpage, one stands for x-y plane and the other is x-z plane. I made a html table (which has sytle "display:none") on the webpage and wrote a whole library that manipulates points movements and changing the number in the table. I used Interact.js to animate the dragging effect and point is corresponding to the value inside the html table as distances to the left edge and top edge of the division. If a point has position (1, 2, 3), then that point will have 5 pixels away from the left and 10 pixels away from the top in the x-y plane, and similarly in the x-z plane. The reset button awakes a function in javascript that pass the current 20 points to the physical library and then re-calculates the physical structure as well as the rail shape.<p>
+      <h3>2.6 More things tried</h3>
+      <p> I also tried to implement different materials on the rail, but I failed to map the correct texture coordinates on it since it is irregularly curved. </p>
+
+      <div class="page-header">
+        <h2>3 Physical models</h2>
+      </div>
+      <h3>3.1 Position modeling</h3>
+      <p>The inputs are twenty arbitrary points points[20], and we aim to find a smooth curve that passes through all the points.Firstly we parameterize x, y and z of the twenty points to functions of s (0<= s <= 19). Then we apply Bezier to all the adjacent points to interpolate them (Reference 5.6). Here the tangent vectors are approximated by taking the difference between the preceding and the proceeding points. So each time the program makes an inquiry to get any point using parameter s, the getter interpolates the nearest two points using Bezier Curve and returns the result.</p>
+      <h3>3.2 Tangent vector modeling</h3>
+      <p>Given all the points on the curve, we would like to find a more accurate tangent line on arbitrary points. This can be easily done by sampling two points that are really close to it and take difference. One edge case is straight lines. In such case, we simply return the tangent line of the nearest integer point.</p>
+      <h3>3.3 Normal vector modeling</h3>
+      <p>This is the most challenging part of the project. Because in 3D space there are infinite may normal vectors of any tangent vector, we need to pick one that represents the “up” direction. So again, for any point we take two of its neighboring points, and find the center of the circle made by these three points. The vector from the point to the center should give us the correct direction (Reference 5.5). However, the rail could be either convex or concave. So it is possible for the normal vector to be pointing to either direction on this line; and the chances for it to be either way are really same because it totally depends on our choice of normal of the first point. Therefore, we must make a cache. The first normal (s=0) is chosen to be pointing “upward”; and afterwards the normal vectors are recorded for every 0.1 increase of s. The result of dot product of any two consecutive normal vectors should not be less than zero to avoid drastic changes in directions of normals. An edge case is straight line where three points do not form a circle. In this case we set the normal to the nearest cache.</p>
+      <h3>3.4 Rail modeling</h3>
+      <p>Given the normal vectors and tangent vectors, we can easily calculate the surface direction of the rails, which is their cross product.</p>
+      <h3>3.5 Motion modeling</h3>
+      <p>Every millisecond we update the place of the ball according to a few parameters. <br>1.    First calculate the magnitude of the velocity by equation gh+v^2/2 = gh_0. Here v is velocity, h_0 is the initial height of the ball, g is magnitude of gravity and h is current height. <br>2.   Given this magnitude of velocity, we push the point in the direction of tangent vector. <br> 3.Then we find the nearest point to the point we have got on step 2 on the rail to find the new point. <br>
+      The nice part of modeling by energy is that we avoid a lot of computational-heavy force analysis steps and allows the program to run smoother.
+      However, this model does not deal with direction changing. Therefore, a “sign” parameter is added to global field to keep track of the direction of the ball. When the velocity of the ball is small, the program does force analysis and computes acceleration and to see whether the direction of the ball has changed.
+      Finally, if the ball hits the boundary of the rail, the direction of velocity changes, while the magnitude remains. This models to elastic collision.</p>
+      <h3>3.6 Ball rolling</h3>
+      <p>To make the ball roll, all we need to do is to set the a axis that is the same to the direction of the rail surface and keep track of the distance the ball have rolled to update the angle.</p>
+      <h3>3.7 View changing</h3>
+      <p>This functionality is mostly angle and position computation. The main reference is tutorial in Lightgl.js</p>
+      <div class="page-header">
+        <h2>4 Possible extensions and improvement</h2>
+      </div>
+      <p>4.1 More materials for the rail and sphere, e.g. glass simulation.</p>
+      <p>4.2 Smoother rail change system and better UI. Adding more feature to the Control panel like one-click material changing and so on.</p>
+      <p>4.3 Add fractional forces</p>
+      <div class="page-header">
+        <h2>5 References</h2>
+      </div>
+      <p>5.1 <a href="https://github.com/evanw/lightgl.js/">Lightgl.js</a> and its official tutorials.</p>
+      <p>5.2 <a href="http://interactjs.io">Interact.js</a></p>
+      <p>5.3 <a href="http://getbootstrap.com">Bootstrap</a></p>
+      <p>5.4 <a href="https://93i.de/p/free-skybox-texture-set/">Free Skybox Texture Set</a> From 93 Intereactive</p>
+      <p>5.5 <a href="https://en.wikipedia.org/wiki/Circumscribed_circle">Circumscribed_circle</a> from Wikipedia</p>
+      <p>5.6 <a href="http://mathfaculty.fullerton.edu/mathews/n2003/BezierCurveMod.html">Bezier Curve</a></p>
+
+
+	<footer class="footer">
+		<div class="container">
+		<div class="page-header"></div>
+		<p class="text-muted">Project Rollerball. 	&copy;Xuanyu & Silei</p>
+		</div>
+	</footer>
+
+
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="./bootstrap/jquery.min.js"></script>
+    <script>window.jQuery || document.write('<script src="../../assets/js/vendor/jquery.min.js"><\/script>')</script>
+    <script src="./bootstrap/bootstrap.min.js"></script>
+    <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
+    <script src="./bootstrap/ie10-viewport-bug-workaround.js"></script>
+  
+
+</body><div></div></html>
